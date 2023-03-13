@@ -6,6 +6,11 @@ import re
 import os
 import sys
 import logging
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email.utils import COMMASPACE, formatdate
+from email import encoders
 
 app=Flask(__name__)
 @app.route('/',methods=['GET','POST'])
@@ -16,10 +21,10 @@ def index():
         x = request.form['singer']
         n = int(request.form['song_count'])
         y = int(request.form['duration'])
-        output_name = request.form['output']
+        email = request.form['email']
 
         x = x.replace(' ','') + "songs"
-        output_name = output_name + ".mp3"
+        output_name = "output.mp3"
 
         html = urllib.request.urlopen('https://www.youtube.com/results?search_query=' + str(x))
         video_ids = re.findall(r"watch\?v=(\S{11})", html.read().decode())
@@ -48,8 +53,28 @@ def index():
             for i in range(n):
                 os.remove("audio_"+str(i)+".mp3")
         
-        # if(send_file(path_or_file = str(os.getcwd())+"\\"+output_name, mimetype = "audio/mpeg", as_attachment=True)):
-        #     os.remove(output_name)
+        msg = MIMEMultipart()
+        msg['From'] = "samartesting01@gmail.com"
+        msg['To'] = COMMASPACE.join([email])
+        msg['Date'] = formatdate(localtime=True)
+        msg['Subject'] = "Your magic mashup from Samar"
+
+        with open("output.mp3", "rb") as f:
+            part = MIMEBase('application', "octet-stream")
+            part.set_payload(f.read())
+
+            encoders.encode_base64(part)
+            part.add_header('Content-Disposition', 'attachment', filename="output.mp3")
+            msg.attach(part)
+        smtp = smtplib.SMTP('smtp.gmail.com', 587)
+        smtp.ehlo()
+        smtp.starttls()
+        smtp.ehlo()
+        smtp.login("samartesting01@gmail.com", "wroyrmvujovvalrw")
+        smtp.sendmail("samartesting01@gmail.com", [email], msg.as_string())
+        print("Email Sent")
+
+        os.remove("output.mp3")
 
         return redirect("/success")
     return render_template('index.html')
