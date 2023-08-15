@@ -30,8 +30,8 @@ def index():
         video_ids = re.findall(r"watch\?v=(\S{11})", html.read().decode())
                                                         
         for i in range(n):
-            yt = YouTube("https://www.youtube.com/watch?v=" + video_ids[i]) 
-            mp4files = yt.streams.filter(only_audio=True).first().download(filename='audio_'+str(i)+'.mp3')
+            streams = yt.streams.filter(only_audio=True).first()
+            mp4files = streams.download(output_path='.', filename='audio_'+str(i)+'.mp3')
 
         if os.path.isfile(str(os.getcwd())+"\\audio_0.mp3"):
             try:
