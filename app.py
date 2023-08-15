@@ -16,22 +16,26 @@ app=Flask(__name__)
 @app.route('/',methods=['GET','POST'])
 
 def index():
-    delete_after_use = True                              
-    if(request.method=='POST'):
+    delete_after_use = True
+    if request.method == 'POST':
         x = request.form['singer']
         n = int(request.form['song_count'])
         y = int(request.form['duration'])
         email = request.form['email']
 
-        x = x.replace(' ','') + "songs"
+        x = x.replace(' ', '') + "songs"
         output_name = "output.mp3"
 
         html = urllib.request.urlopen('https://www.youtube.com/results?search_query=' + str(x))
         video_ids = re.findall(r"watch\?v=(\S{11})", html.read().decode())
-                                                        
+
         for i in range(n):
-            streams = yt.streams.filter(only_audio=True).first()
-            mp4files = streams.download(output_path='.', filename='audio_'+str(i)+'.mp3')
+            yt = YouTube("https://www.youtube.com/watch?v=" + video_ids[i])
+            streams = yt.streams.filter(only_audio=True)
+            if streams:
+                mp4files = streams.first().download(output_path='.', filename='audio_'+str(i))
+            else:
+                return "Error: No audio streams available for the video."
 
         if os.path.isfile(str(os.getcwd())+"\\audio_0.mp3"):
             try:
