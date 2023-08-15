@@ -1,6 +1,6 @@
 Flask==2.2.2
 Werkzeug==2.2.2
-pytube==12.1.2
+pytube==15.0.0
 pydub==0.25.1
 urllib3==1.26.14
 regex==2022.10.31
